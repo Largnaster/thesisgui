@@ -4,7 +4,7 @@ Here are described the steps to execute the two python scripts for this work, `t
 
 ## Table of contents
 1. [Dependencies](#dependencies)
-2. [thesis_training: Training Multiple Dlassifiers](#thesis_training)
+2. [thesis_training: Training Multiple Classifiers](#thesis_training)
     - [Usage](#thesis_training_usage)
     - [Code Explanation](#thesis_training_code_explanation)
 3. [thesis_trained: Predicting Labels Using Trained Model](#thesis_trained)
