@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index Template</title>
+  </head>
+  <body>
+    <form action="{% url 'classification:classify' %}" method="post">
+      {% csrf_token %}
+      <input type="text" name="api_key" />
+      <input type="text" name="api_secret" />
+      <input type="submit" value="Send" />
+    </form>
+    {% if error %}
+      <p>{{ error }}</p>
+    {% endif %}
+    {% if api_key and api_secret %}
+      <p>{{ api_key }}, {{ api_secret }}</p>
+    {% endif %}
+  </body>
+</html>

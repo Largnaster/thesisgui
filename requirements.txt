@@ -3,6 +3,7 @@ autopep8==2.0.1
 pylint==2.16.4
 
 Django==4.2
+djangorestframework==3.14.0
 tweepy==4.12.1
 
 pandas==1.4.4
