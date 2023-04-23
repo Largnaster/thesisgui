@@ -50,8 +50,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        var elems = document.querySelectorAll('.datepicker');
-        var instances = M.Datepicker.init(elems, {});
+        var start_date_elem = document.getElementById('start_date');
+        var end_date_elem = document.getElementById('end_date');
+        
+        var start_date_instance = M.Datepicker.init(start_date_elem, {
+          autoClose: true,
+          format: 'yyyy-mm-dd',
+          setDefaultDate: true,
+          defaultDate: new Date(start_date_elem.value)
+        });
+
+        var end_date_instance = M.Datepicker.init(end_date_elem, {
+          autoClose: true,
+          format: 'yyyy-mm-dd',
+          setDefaultDate: true,
+          defaultDate: new Date(end_date_elem.value)
+        });
       });
     </script>
   </body>
