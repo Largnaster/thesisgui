@@ -34,7 +34,7 @@ def classify_tweets_with_twitter_api(api_key, api_secret):
 
     # Get tweets from the API
     tweets = tw.Cursor(api.search, q=search_query, lang="es",
-                       since="2020-03-21", until="2020-03-26").items(6000)
+                       since="2020-03-21", until="2020-03-26").items(450)
 
     # Store the responses
     tweets_list = []
