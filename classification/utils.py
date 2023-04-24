@@ -27,14 +27,16 @@ def classify_csv_data():
         './classified_dataset/classified_data.csv', index=False)
 
 
-def classify_tweets_with_twitter_api(api_key, api_secret):
-    api = TwitterApi().twitter_api_connection(api_key, api_secret)
+def classify_tweets_with_twitter_api(data):
+    api = TwitterApi().twitter_api_connection(
+        data["api_key"], data["api_secret"])
     # Search query parameters
-    search_query = 'covid -filter:retweets'
+    search_query = '{search} -filter:retweets'.format(
+        search=data["search_query"])
 
     # Get tweets from the API
-    tweets = tw.Cursor(api.search, q=search_query, lang="es",
-                       since="2020-03-21", until="2020-03-26").items(450)
+    tweets = tw.Cursor(api.search_tweets, q=search_query, lang="es",
+                       until=data["end_date"]).items(450)
 
     # Store the responses
     tweets_list = []
@@ -44,35 +46,35 @@ def classify_tweets_with_twitter_api(api_key, api_secret):
     # Verify the length of the list
     print("Total tweets fetched: ", len(tweets_list))
 
-    # Initializing the dataframe
-    tweets_df = pd.DataFrame()
-
     # Populate the dataframe
+    tweet_data = []
     for tweet in tweets_list:
-        hashtags = []
         try:
-            for hashtag in tweet.entities["hashtags"]:
-                hashtags.append(hashtag["text"])
+            hashtags = [hashtag["text"]
+                        for hashtag in tweet.entities["hashtags"]]
             text = api.get_status(id=tweet.id, tweet_mode='extended').full_text
+            tweet_data.append(
+                {'user_name': tweet.user.name,
+                 'user_location': tweet.user.location,
+                 'user_description': tweet.user.description,
+                 'user_verified': tweet.user.verified,
+                 'date': tweet.created_at,
+                 'text': text,
+                 'hashtags': hashtags if hashtags else None,
+                 'source': tweet.source
+                 })
         except:
             continue
-        tweets_df = tweets_df.append(pd.DataFrame({
-            'user_name': tweet.user.name,
-            'user_location': tweet.user.location,
-            'user_description': tweet.user.description,
-            'user_verified': tweet.user.verified,
-            'date': tweet.created_at,
-            'text': text,
-            'hashtags': [hashtags if hashtags else None],
-            'source': tweet.source
-        }))
-        tweets_df = tweets_df.reset_index(drop=True)
+
+    # tweets_df = tweets_df.reset_index(drop=True)
+    # Initializing the dataframe
+    tweets_df = pd.DataFrame(tweet_data)
 
     # Show the dataframe
     tweets_df.head()
 
     # Clean the dataframe to perform classification
-    clean_tweets_df = [" ".join(TransformerInstance.spacy_tokenizer(text))
+    clean_tweets_df = [" ".join(TransformerInstance.spacy_tokenizer(text=text))
                        for text in tweets_df['text']]
 
     # Predict using the model and the clean dataframe

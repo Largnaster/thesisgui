@@ -22,8 +22,16 @@ def classify(request):
     if not start_date or not end_date:
         return render(request, 'index.html', {'error': 'Please provide both start and end dates.'})
 
+    print(api_key, api_secret, search_query, start_date, end_date)
+
     try:
-        classify_tweets_with_twitter_api(api_key, api_secret)
+        data = {
+            'api_key': api_key,
+            'api_secret': api_secret,
+            'search_query': search_query,
+            'end_date': end_date
+        }
+        classify_tweets_with_twitter_api(data)
         return render(request, 'index.html', {'results': 'Classification done successfully.'})
     except Exception as e:
         print(e)
