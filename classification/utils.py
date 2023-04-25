@@ -2,7 +2,7 @@ import tweepy as tw
 import pandas as pd
 import glob
 from classification.connection import TwitterApi
-from classification.tranformers import TransformerInstance
+from manage import spacy_tokenizer, get_model
 
 
 def classify_csv_data():
@@ -15,10 +15,10 @@ def classify_csv_data():
     dataframe_to_classify = pd.concat(multiple_df)
 
     # Clean the dataset to delete None values, urls, etc.
-    clean_df_to_classify = [" ".join(TransformerInstance.spacy_tokenizer(text))
+    clean_df_to_classify = [" ".join(spacy_tokenizer(text))
                             for text in dataframe_to_classify['text']]
 
-    logistic_regression_model = TransformerInstance.get_model()
+    logistic_regression_model = get_model()
     predicted_labels = logistic_regression_model.predict(clean_df_to_classify)
     classified_df = pd.DataFrame(
         {'text': dataframe_to_classify['text'], 'label': predicted_labels}
@@ -36,7 +36,7 @@ def classify_tweets_with_twitter_api(data):
 
     # Get tweets from the API
     tweets = tw.Cursor(api.search_tweets, q=search_query, lang="es",
-                       until=data["end_date"]).items(450)
+                       until=data["end_date"]).items(15)
 
     # Store the responses
     tweets_list = []
@@ -74,11 +74,11 @@ def classify_tweets_with_twitter_api(data):
     tweets_df.head()
 
     # Clean the dataframe to perform classification
-    clean_tweets_df = [" ".join(TransformerInstance.spacy_tokenizer(text=text))
+    logistic_regression_model = get_model()
+    clean_tweets_df = [" ".join(spacy_tokenizer(text))
                        for text in tweets_df['text']]
 
     # Predict using the model and the clean dataframe
-    logistic_regression_model = TransformerInstance.get_model()
     predicted_labels = logistic_regression_model.predict(clean_tweets_df)
 
     # Save the classified dataset in a new file
