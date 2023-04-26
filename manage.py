@@ -3,11 +3,11 @@
 import spacy
 from spellchecker import SpellChecker
 from spacy.lang.es.stop_words import STOP_WORDS
-from django.conf import settings
 from joblib import load
 import re
 import string
 import os
+from pathlib import Path
 import sys
 from sklearn.base import TransformerMixin
 
@@ -32,8 +32,9 @@ nlp = spacy.load("es_core_news_sm")
 punctuations = string.punctuation
 
 # Load the trained model
+base_path = Path(__file__).resolve().parent
 model_path = os.path.join(
-    settings.BASE_DIR, 'classification', 'models', 'logistic_regression_model.joblib')
+    base_path, 'classification', 'models', 'logistic_regression_model.joblib')
 
 
 def remove_urls(word):

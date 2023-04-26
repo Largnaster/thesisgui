@@ -1,6 +1,9 @@
 import tweepy as tw
 import pandas as pd
 import glob
+import os
+from django.conf import settings
+from django.utils import timezone
 from classification.connection import TwitterApi
 from manage import spacy_tokenizer, get_model
 
@@ -85,5 +88,10 @@ def classify_tweets_with_twitter_api(data):
     classified_df = pd.DataFrame(
         {'text': tweets_df['text'], 'label': predicted_labels}
     )
-    classified_df.to_csv(
-        "./classified_dataset/classified_data.csv", index=False)
+    file_name = 'classified_data {}.csv'.format(
+        timezone.now().strftime("%Y-%m-%d %H-%M-%S"))
+    output_path = os.path.join(
+        settings.BASE_DIR, 'classification', 'classified_dataset', file_name)
+    classified_df.to_csv(output_path, index=False)
+
+    return output_path
