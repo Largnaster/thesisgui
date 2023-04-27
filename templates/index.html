@@ -13,6 +13,12 @@
   </head>
   <body>
     <div class="container">
+      <h4>Tweet Text Classification</h4>
+      <p>
+        This form allows you to classify tweets based on a search query. Provide your Twitter Developer API key and secret,
+        a search query, and an end date (max 7 days before today). The Twitter API has a limited number of retrievable tweets.
+        After the classification, a downloadable file with the results will be generated.
+      </p>
       <form action="{% url 'classification:classify' %}" method="post">
         {% csrf_token %}
         <div class="input-field">
@@ -28,13 +34,37 @@
           <label for="search_query">Search Query</label>
         </div>
         <div class="input-field">
-          <input type="date" name="end_date" id="end_date" class="datepicker" />
+          <input type="text" name="end_date" id="end_date" class="datepicker" />
           <label for="end_date">End Date</label>
         </div>
         <button class="btn waves-effect waves-light" type="submit" name="action">Send
           <i class="material-icons right">send</i>
         </button>
       </form>
+      <div id="loader" class="row" style="display: none;">
+        <div class="col s12 center-align">
+          <div class="preloader-wrapper big active">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left">
+                <div class="circle"></div>
+              </div>
+              <div class="gap-patch">
+                <div class="circle"></div>
+              </div>
+              <div class="circle-clipper right">
+                <div class="circle"></div>
+              </div>
+            </div>
+          </div>
+          <p>Loading, please wait...</p>
+        </div>
+      </div>
+      <div id="success" class="row" style="display: none;">
+        <div class="col s12 center-align">
+          <i class="material-icons green-text">check_circle</i>
+          <p>File generated successfully!</p>
+        </div>
+      </div>
       {% if error %}
         <hr />
         <p>{{ error }}</p>
@@ -45,15 +75,69 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
+      function downloadFile(data, fileName) {
+        const blob = new Blob([data], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      }
+
+      function hideSuccessMessage() {
+        const successElem = document.getElementById('success');
+        successElem.style.display = 'none';
+      }
+      
       document.addEventListener('DOMContentLoaded', function() {
-        var start_date_elem = document.getElementById('start_date');
+        var end_date_elem = document.getElementById('end_date');
         
-        var start_date_instance = M.Datepicker.init(start_date_elem, {
+        var end_date_instance = M.Datepicker.init(end_date_elem, {
           autoClose: true,
           format: 'yyyy-mm-dd',
           setDefaultDate: true,
-          defaultDate: new Date(start_date_elem.value)
+          defaultDate: new Date(end_date_elem.value)
         });
+      });
+
+      const formElem = document.querySelector('form');
+      formElem.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const loaderElem = document.getElementById('loader');
+        const successElem = document.getElementById('success');
+        const submitBtn = document.querySelector('button[type="submit"]');
+        
+        loaderElem.style.display = 'block';
+        submitBtn.disabled = true;
+
+        const xhr = new XMLHttpRequest();
+        const classify_url = "{% url 'classification:classify' %}"
+        xhr.open('POST', classify_url, true);
+        xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+        xhr.responseType = 'blob';
+
+        xhr.onload = function() {
+          if (xhr.status === 200) {
+            const disposition = xhr.getResponseHeader('Content-Disposition');
+            const fileName = disposition.match(/filename="(.+)"/)[1];
+            downloadFile(xhr.response, fileName);
+
+            loaderElem.style.display = 'none';
+            successElem.style.display = 'block';
+
+            setTimeout(function() {
+              hideSuccessMessage();
+              submitBtn.disabled = false;
+            }, 3000);
+          } else {
+            // Handle error
+            console.error('Request failed');
+          }
+        };
+
+        xhr.send(new FormData(formElem));
       });
     </script>
   </body>
