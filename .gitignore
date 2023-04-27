@@ -2,4 +2,4 @@ env
 .vscode
 __pycache__
 *.sqlite3
-/classification/classified_dataset
+/classification/classified_dataset/*.csv
