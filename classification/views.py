@@ -1,6 +1,6 @@
 from django.shortcuts import render
 import os
-from classification.utils import classify_tweets_with_twitter_api
+from classification.utils import classify_csv_data, classify_tweets_with_twitter_api
 from django.http import FileResponse
 
 
@@ -22,8 +22,6 @@ def classify(request):
     if not end_date:
         return render(request, 'index.html', {'error': 'Please provide end date.'})
 
-    print(api_key, api_secret, search_query, end_date)
-
     try:
         data = {
             'api_key': api_key,
@@ -32,6 +30,24 @@ def classify(request):
             'end_date': end_date
         }
         csv_file_path = classify_tweets_with_twitter_api(data)
+
+        response = FileResponse(
+            open(csv_file_path, 'rb'), content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(csv_file_path)}"'
+        return response
+    except Exception as e:
+        print(e)
+        return render(request, 'index.html', {'error': 'Something went wrong. Please try again.'})
+
+
+def classify_file(request):
+    if 'csv_file' not in request.FILES:
+        return render(request, 'index.html', {'error': 'Please provide a CSV file.'})
+
+    csv_file = request.FILES['csv_file']
+
+    try:
+        csv_file_path = classify_csv_data(csv_file)
 
         response = FileResponse(
             open(csv_file_path, 'rb'), content_type='text/csv')

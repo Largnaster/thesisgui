@@ -1,6 +1,5 @@
 import tweepy as tw
 import pandas as pd
-import glob
 import os
 from django.conf import settings
 from django.utils import timezone
@@ -8,14 +7,8 @@ from classification.connection import TwitterApi
 from manage import spacy_tokenizer, get_model
 
 
-def classify_csv_data():
-    # Perform the prediction
-    files_to_classify = './testing'
-    files_path_list = glob.glob(f'{files_to_classify}/*.csv')
-
-    multiple_df = [pd.read_csv(file_path, encoding='utf-8-sig')
-                   for file_path in files_path_list]
-    dataframe_to_classify = pd.concat(multiple_df)
+def classify_csv_data(file):
+    dataframe_to_classify = pd.read_csv(file, encoding='utf-8-sig')
 
     # Clean the dataset to delete None values, urls, etc.
     clean_df_to_classify = [" ".join(spacy_tokenizer(text))
@@ -26,8 +19,14 @@ def classify_csv_data():
     classified_df = pd.DataFrame(
         {'text': dataframe_to_classify['text'], 'label': predicted_labels}
     )
+    file_name = 'classified_data {}.csv'.format(
+        timezone.now().strftime("%Y-%m-%d %H-%M-%S"))
+    output_path = os.path.join(
+        settings.BASE_DIR, 'classification', 'classified_dataset', file_name)
     classified_df.to_csv(
-        './classified_dataset/classified_data.csv', index=False)
+        output_path, index=False)
+
+    return output_path
 
 
 def classify_tweets_with_twitter_api(data):
@@ -45,9 +44,6 @@ def classify_tweets_with_twitter_api(data):
     tweets_list = []
     for tweet in tweets:
         tweets_list.append(tweet)
-
-    # Verify the length of the list
-    print("Total tweets fetched: ", len(tweets_list))
 
     # Populate the dataframe
     tweet_data = []
