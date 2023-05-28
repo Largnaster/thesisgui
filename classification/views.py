@@ -2,6 +2,7 @@ from django.shortcuts import render
 import os
 from classification.utils import classify_csv_data, classify_tweets_with_twitter_api
 from django.http import FileResponse
+from django.views.decorators.csrf import csrf_exempt
 
 
 def index(request):
@@ -40,6 +41,7 @@ def classify(request):
         return render(request, 'index.html', {'error': 'Something went wrong. Please try again.'})
 
 
+@csrf_exempt
 def classify_file(request):
     if 'csv_file' not in request.FILES:
         return render(request, 'index.html', {'error': 'Please provide a CSV file.'})

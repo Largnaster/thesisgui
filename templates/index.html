@@ -90,7 +90,7 @@
       </div>
       {% if error %}
         <hr />
-        <p>{{ error }}</p>
+        <h3>{{ error }}</h3>
       {% elif results %}
         <hr />
         <p>{{ results }}</p>
@@ -140,10 +140,8 @@
         
         const loaderElem = document.getElementById('loader');
         const successElem = document.getElementById('success');
-        // const submitBtn = document.querySelector('button[type="submit"]');
         
         loaderElem.style.display = 'block';
-        // submitBtn.disabled = true;
         disableForms(true);
 
         const xhr = new XMLHttpRequest();
@@ -163,7 +161,6 @@
 
             setTimeout(function() {
               hideSuccessMessage();
-              // submitBtn.disabled = false;
               disableForms(false);
             }, 3000);
           } else {
@@ -178,6 +175,11 @@
       const fileFormElem = document.getElementById('csv-upload-form');
       fileFormElem.addEventListener('submit', function(e) {
         e.preventDefault();
+        const csvFileInput = document.getElementById('csv_file');
+        if (!csvFileInput.value) {
+          alert('Please upload a file before submitting.');
+          return;
+        }
 
         const loaderElem = document.getElementById('loader');
         const successElem = document.getElementById('success');
@@ -191,6 +193,9 @@
         xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
         xhr.responseType = 'blob';
 
+        let formData = new FormData();
+        formData.append('csv_file', csvFileInput.files[0]);
+        
         xhr.onload = function() {
           if (xhr.status === 200) {
             const disposition = xhr.getResponseHeader('Content-Disposition');
@@ -210,7 +215,7 @@
           }
         };
 
-        xhr.send(new FormData(fileFormElem));
+        xhr.send(formData);
       });
     </script>
   </body>
